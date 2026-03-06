@@ -1,17 +1,14 @@
-# Create a dockerfile with node image
+FROM node:20-alpine
 
-# Create a directory to hold the application code inside the image, this will be the working directory for your application
+WORKDIR /usr/src/app
 
-# Set the working directory to /usr/src/app
+COPY package*.json ./
+RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
 
-# Copy package.json and package-lock.json to the working directory
+COPY . .
 
-# Install npm 
+RUN npm run build
 
-# Copy the current directory contents into the container at /usr/src/app
+EXPOSE 3000
 
-# Make port 3000 available to the world outside this container
-
-# Run Nodeserver.js when the container launches
-
-# Write a docker comand to build the image and tag it as mynodeapp
+CMD ["node", "nodeserver.js"]
