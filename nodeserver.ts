@@ -5,8 +5,8 @@ import path from 'path';
 import readline from 'readline';
 
 /**
- * Shape of entries in colors.json.
- * Used by /returncolorcode to map a color name to a hex value.
+ * ColorFileItem - shape of entries in colors.json.
+ * Used by the `/returncolorcode` endpoint to map a color name to a hex value.
  */
 type ColorFileItem = {
     color: string;
@@ -19,7 +19,7 @@ type ColorFileItem = {
 const dniLetters = 'TRWAGMYFPDXBNJZSQVHLCKE';
 
 /**
- * Small in-memory catalog used by /randomeuropeancountry.
+ * In-memory list of European countries used by `/randomeuropeancountry`.
  */
 const europeanCountries: Array<{ country: string; isoCode: string }> = [
     { country: 'Spain', isoCode: 'ES' },
@@ -40,7 +40,9 @@ const europeanCountries: Array<{ country: string; isoCode: string }> = [
 ];
 
 /**
- * Sends a plain text HTTP 200 response.
+ * Send a plain-text HTTP 200 response.
+ * @param res HTTP response object
+ * @param text Body text to send
  */
 const sendText = (res: http.ServerResponse, text: string): void => {
     res.writeHead(200, { 'Content-Type': 'text/plain' });
@@ -48,7 +50,9 @@ const sendText = (res: http.ServerResponse, text: string): void => {
 };
 
 /**
- * Sends a JSON HTTP 200 response.
+ * Send a JSON HTTP 200 response.
+ * @param res HTTP response object
+ * @param value Value to JSON-stringify and send
  */
 const sendJson = (res: http.ServerResponse, value: unknown): void => {
     res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -56,15 +60,21 @@ const sendJson = (res: http.ServerResponse, value: unknown): void => {
 };
 
 /**
- * Returns all lines from in-memory text that contain a target word.
+ * Return lines from an in-memory text blob that contain `word`.
+ * @param content Full text to search
+ * @param word Substring to match
+ * @returns Array of matching lines
  */
 const listLinesContainingWord = (content: string, word: string): string[] => {
     return content.split(/\r?\n/).filter((line) => line.includes(word));
 };
 
 /**
- * Streams a file and returns lines that contain a target word.
- * This avoids loading large files fully into memory.
+ * Stream a file and return lines that contain `word`.
+ * This is memory-efficient for large files.
+ * @param filePath Path to the file to read
+ * @param word Substring to match
+ * @returns Array of matching lines
  */
 const readLinesContainingWord = async (filePath: string, word: string): Promise<string[]> => {
     const found: string[] = [];
@@ -84,9 +94,9 @@ const readLinesContainingWord = async (filePath: string, word: string): Promise<
 };
 
 /**
- * Demo HTTP API server used by the lab.
+ * Simple demo HTTP API server used for exercises and examples.
  *
- * Endpoints:
+ * Supported endpoints:
  * - /get
  * - /daysbetweendates
  * - /validatephonenumber
@@ -314,14 +324,14 @@ const nodeServer = http.createServer((req, res) => {
 
         sendText(res, 'method not supported');
     })().catch((error: unknown) => {
-        // Centralized catch to avoid unhandled promise rejections in async route logic.
+        // Centralized error handler for async route logic.
         const message = error instanceof Error ? error.message : 'unknown error';
         res.writeHead(500, { 'Content-Type': 'text/plain' });
         res.end(`internal server error: ${message}`);
     });
 });
 
-// Fixed lab port used by tests and curl examples.
+// Server listens on port 3000 by default (used by tests and examples).
 nodeServer.listen(3000, () => {
     console.log('server is listening on port 3000');
 });

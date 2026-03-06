@@ -26,7 +26,7 @@ const path_1 = __importDefault(require("path"));
 const readline_1 = __importDefault(require("readline"));
 const dniLetters = 'TRWAGMYFPDXBNJZSQVHLCKE';
 /**
- * Small in-memory catalog used by /randomeuropeancountry.
+ * In-memory list of European countries used by `/randomeuropeancountry`.
  */
 const europeanCountries = [
     { country: 'Spain', isoCode: 'ES' },
@@ -46,28 +46,38 @@ const europeanCountries = [
     { country: 'Denmark', isoCode: 'DK' }
 ];
 /**
- * Sends a plain text HTTP 200 response.
+ * Send a plain-text HTTP 200 response.
+ * @param res HTTP response object
+ * @param text Body text to send
  */
 const sendText = (res, text) => {
     res.writeHead(200, { 'Content-Type': 'text/plain' });
     res.end(text);
 };
 /**
- * Sends a JSON HTTP 200 response.
+ * Send a JSON HTTP 200 response.
+ * @param res HTTP response object
+ * @param value Value to JSON-stringify and send
  */
 const sendJson = (res, value) => {
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(value));
 };
 /**
- * Returns all lines from in-memory text that contain a target word.
+ * Return lines from an in-memory text blob that contain `word`.
+ * @param content Full text to search
+ * @param word Substring to match
+ * @returns Array of matching lines
  */
 const listLinesContainingWord = (content, word) => {
     return content.split(/\r?\n/).filter((line) => line.includes(word));
 };
 /**
- * Streams a file and returns lines that contain a target word.
- * This avoids loading large files fully into memory.
+ * Stream a file and return lines that contain `word`.
+ * This is memory-efficient for large files.
+ * @param filePath Path to the file to read
+ * @param word Substring to match
+ * @returns Array of matching lines
  */
 const readLinesContainingWord = (filePath, word) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, e_1, _b, _c;
@@ -97,9 +107,9 @@ const readLinesContainingWord = (filePath, word) => __awaiter(void 0, void 0, vo
     return found;
 });
 /**
- * Demo HTTP API server used by the lab.
+ * Simple demo HTTP API server used for exercises and examples.
  *
- * Endpoints:
+ * Supported endpoints:
  * - /get
  * - /daysbetweendates
  * - /validatephonenumber
@@ -295,13 +305,13 @@ const nodeServer = http_1.default.createServer((req, res) => {
         }
         sendText(res, 'method not supported');
     }))().catch((error) => {
-        // Centralized catch to avoid unhandled promise rejections in async route logic.
+        // Centralized error handler for async route logic.
         const message = error instanceof Error ? error.message : 'unknown error';
         res.writeHead(500, { 'Content-Type': 'text/plain' });
         res.end(`internal server error: ${message}`);
     });
 });
-// Fixed lab port used by tests and curl examples.
+// Server listens on port 3000 by default (used by tests and examples).
 nodeServer.listen(3000, () => {
     console.log('server is listening on port 3000');
 });
