@@ -112,3 +112,41 @@ curl "http://localhost:3000/getfulltextfile"
 curl "http://localhost:3000/getlinebylinefromttextfile"
 ```
 
+Container (Podman)
+-------
+
+Exercise 5 is implemented with container files compatible with Podman:
+- `Containerfile` (Podman default)
+- `dockerfile` (same image recipe)
+
+Build and run with Podman:
+
+```bash
+podman build -t mynodeapp -f Containerfile .
+podman run --rm -p 3000:3000 --name mynodeapp mynodeapp
+```
+
+Then test an endpoint:
+
+```bash
+curl "http://localhost:3000/get?key=world"
+```
+
+Container (Docker)
+-------
+
+You can run the same app with Docker using the included `dockerfile`.
+
+Build and run with Docker:
+
+```bash
+docker build -t mynodeapp -f dockerfile .
+docker run --rm -p 3000:3000 --name mynodeapp mynodeapp
+```
+
+Then test an endpoint:
+
+```bash
+curl "http://localhost:3000/get?key=world"
+```
+
