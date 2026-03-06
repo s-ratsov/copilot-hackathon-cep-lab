@@ -25,6 +25,9 @@ const http_1 = __importDefault(require("http"));
 const path_1 = __importDefault(require("path"));
 const readline_1 = __importDefault(require("readline"));
 const dniLetters = 'TRWAGMYFPDXBNJZSQVHLCKE';
+/**
+ * Small in-memory catalog used by /randomeuropeancountry.
+ */
 const europeanCountries = [
     { country: 'Spain', isoCode: 'ES' },
     { country: 'France', isoCode: 'FR' },
@@ -42,17 +45,30 @@ const europeanCountries = [
     { country: 'Greece', isoCode: 'GR' },
     { country: 'Denmark', isoCode: 'DK' }
 ];
+/**
+ * Sends a plain text HTTP 200 response.
+ */
 const sendText = (res, text) => {
     res.writeHead(200, { 'Content-Type': 'text/plain' });
     res.end(text);
 };
+/**
+ * Sends a JSON HTTP 200 response.
+ */
 const sendJson = (res, value) => {
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(value));
 };
+/**
+ * Returns all lines from in-memory text that contain a target word.
+ */
 const listLinesContainingWord = (content, word) => {
     return content.split(/\r?\n/).filter((line) => line.includes(word));
 };
+/**
+ * Streams a file and returns lines that contain a target word.
+ * This avoids loading large files fully into memory.
+ */
 const readLinesContainingWord = (filePath, word) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, e_1, _b, _c;
     const found = [];
@@ -80,11 +96,30 @@ const readLinesContainingWord = (filePath, word) => __awaiter(void 0, void 0, vo
     }
     return found;
 });
+/**
+ * Demo HTTP API server used by the lab.
+ *
+ * Endpoints:
+ * - /get
+ * - /daysbetweendates
+ * - /validatephonenumber
+ * - /validatespanishdni
+ * - /returncolorcode
+ * - /tellmeajoke
+ * - /moviesbydirector
+ * - /parseurl
+ * - /listfiles
+ * - /getfulltextfile
+ * - /getlinebylinefromttextfile
+ * - /calculatememoryconsumption
+ * - /randomeuropeancountry
+ */
 const nodeServer = http_1.default.createServer((req, res) => {
     void (() => __awaiter(void 0, void 0, void 0, function* () {
         var _a, _b, _c, _d, _e;
         const url = new URL((_a = req.url) !== null && _a !== void 0 ? _a : '/', `http://${(_b = req.headers.host) !== null && _b !== void 0 ? _b : 'localhost:3000'}`);
         const pathname = url.pathname.toLowerCase();
+        // Basic greeting endpoints.
         if (pathname === '/get') {
             const key = url.searchParams.get('key');
             if (!key) {
@@ -94,6 +129,7 @@ const nodeServer = http_1.default.createServer((req, res) => {
             sendText(res, `hello ${key}`);
             return;
         }
+        // Date and validation endpoints.
         if (pathname === '/daysbetweendates') {
             const date1 = url.searchParams.get('date1');
             const date2 = url.searchParams.get('date2');
@@ -135,6 +171,7 @@ const nodeServer = http_1.default.createServer((req, res) => {
             sendText(res, dniLetter === expectedLetter ? 'valid' : 'invalid');
             return;
         }
+        // File-based lookup endpoint.
         if (pathname === '/returncolorcode') {
             const color = ((_d = url.searchParams.get('color')) !== null && _d !== void 0 ? _d : '').toLowerCase();
             if (!color) {
@@ -152,6 +189,7 @@ const nodeServer = http_1.default.createServer((req, res) => {
             sendText(res, found.code.hex);
             return;
         }
+        // External API integrations.
         if (pathname === '/tellmeajoke') {
             const response = yield axios_1.default.get('https://official-joke-api.appspot.com/random_joke');
             sendJson(res, response.data);
@@ -200,6 +238,7 @@ const nodeServer = http_1.default.createServer((req, res) => {
             sendJson(res, filtered);
             return;
         }
+        // URL parsing and filesystem utility endpoints.
         if (pathname === '/parseurl') {
             const someUrl = url.searchParams.get('someurl');
             if (!someUrl) {
@@ -243,6 +282,7 @@ const nodeServer = http_1.default.createServer((req, res) => {
             sendJson(res, lines);
             return;
         }
+        // Process and random-data utility endpoints.
         if (pathname === '/calculatememoryconsumption') {
             const memoryInGb = process.memoryUsage().heapUsed / (1024 * 1024 * 1024);
             sendText(res, memoryInGb.toFixed(2));
@@ -255,11 +295,13 @@ const nodeServer = http_1.default.createServer((req, res) => {
         }
         sendText(res, 'method not supported');
     }))().catch((error) => {
+        // Centralized catch to avoid unhandled promise rejections in async route logic.
         const message = error instanceof Error ? error.message : 'unknown error';
         res.writeHead(500, { 'Content-Type': 'text/plain' });
         res.end(`internal server error: ${message}`);
     });
 });
+// Fixed lab port used by tests and curl examples.
 nodeServer.listen(3000, () => {
     console.log('server is listening on port 3000');
 });

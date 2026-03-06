@@ -4,6 +4,10 @@ import http from 'http';
 import path from 'path';
 import readline from 'readline';
 
+/**
+ * Shape of entries in colors.json.
+ * Used by /returncolorcode to map a color name to a hex value.
+ */
 type ColorFileItem = {
     color: string;
     code: {
@@ -13,6 +17,10 @@ type ColorFileItem = {
 };
 
 const dniLetters = 'TRWAGMYFPDXBNJZSQVHLCKE';
+
+/**
+ * Small in-memory catalog used by /randomeuropeancountry.
+ */
 const europeanCountries: Array<{ country: string; isoCode: string }> = [
     { country: 'Spain', isoCode: 'ES' },
     { country: 'France', isoCode: 'FR' },
@@ -31,20 +39,33 @@ const europeanCountries: Array<{ country: string; isoCode: string }> = [
     { country: 'Denmark', isoCode: 'DK' }
 ];
 
+/**
+ * Sends a plain text HTTP 200 response.
+ */
 const sendText = (res: http.ServerResponse, text: string): void => {
     res.writeHead(200, { 'Content-Type': 'text/plain' });
     res.end(text);
 };
 
+/**
+ * Sends a JSON HTTP 200 response.
+ */
 const sendJson = (res: http.ServerResponse, value: unknown): void => {
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(value));
 };
 
+/**
+ * Returns all lines from in-memory text that contain a target word.
+ */
 const listLinesContainingWord = (content: string, word: string): string[] => {
     return content.split(/\r?\n/).filter((line) => line.includes(word));
 };
 
+/**
+ * Streams a file and returns lines that contain a target word.
+ * This avoids loading large files fully into memory.
+ */
 const readLinesContainingWord = async (filePath: string, word: string): Promise<string[]> => {
     const found: string[] = [];
     const stream = fs.createReadStream(filePath, { encoding: 'utf-8' });
@@ -62,11 +83,30 @@ const readLinesContainingWord = async (filePath: string, word: string): Promise<
     return found;
 };
 
+/**
+ * Demo HTTP API server used by the lab.
+ *
+ * Endpoints:
+ * - /get
+ * - /daysbetweendates
+ * - /validatephonenumber
+ * - /validatespanishdni
+ * - /returncolorcode
+ * - /tellmeajoke
+ * - /moviesbydirector
+ * - /parseurl
+ * - /listfiles
+ * - /getfulltextfile
+ * - /getlinebylinefromttextfile
+ * - /calculatememoryconsumption
+ * - /randomeuropeancountry
+ */
 const nodeServer = http.createServer((req, res) => {
     void (async () => {
         const url = new URL(req.url ?? '/', `http://${req.headers.host ?? 'localhost:3000'}`);
         const pathname = url.pathname.toLowerCase();
 
+        // Basic greeting endpoints.
         if (pathname === '/get') {
             const key = url.searchParams.get('key');
             if (!key) {
@@ -78,6 +118,7 @@ const nodeServer = http.createServer((req, res) => {
             return;
         }
 
+        // Date and validation endpoints.
         if (pathname === '/daysbetweendates') {
             const date1 = url.searchParams.get('date1');
             const date2 = url.searchParams.get('date2');
@@ -126,6 +167,7 @@ const nodeServer = http.createServer((req, res) => {
             return;
         }
 
+        // File-based lookup endpoint.
         if (pathname === '/returncolorcode') {
             const color = (url.searchParams.get('color') ?? '').toLowerCase();
             if (!color) {
@@ -146,6 +188,7 @@ const nodeServer = http.createServer((req, res) => {
             return;
         }
 
+        // External API integrations.
         if (pathname === '/tellmeajoke') {
             const response = await axios.get('https://official-joke-api.appspot.com/random_joke');
             sendJson(res, response.data);
@@ -207,6 +250,7 @@ const nodeServer = http.createServer((req, res) => {
             return;
         }
 
+        // URL parsing and filesystem utility endpoints.
         if (pathname === '/parseurl') {
             const someUrl = url.searchParams.get('someurl');
             if (!someUrl) {
@@ -255,6 +299,7 @@ const nodeServer = http.createServer((req, res) => {
             return;
         }
 
+        // Process and random-data utility endpoints.
         if (pathname === '/calculatememoryconsumption') {
             const memoryInGb = process.memoryUsage().heapUsed / (1024 * 1024 * 1024);
             sendText(res, memoryInGb.toFixed(2));
@@ -269,12 +314,14 @@ const nodeServer = http.createServer((req, res) => {
 
         sendText(res, 'method not supported');
     })().catch((error: unknown) => {
+        // Centralized catch to avoid unhandled promise rejections in async route logic.
         const message = error instanceof Error ? error.message : 'unknown error';
         res.writeHead(500, { 'Content-Type': 'text/plain' });
         res.end(`internal server error: ${message}`);
     });
 });
 
+// Fixed lab port used by tests and curl examples.
 nodeServer.listen(3000, () => {
     console.log('server is listening on port 3000');
 });
