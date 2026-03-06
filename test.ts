@@ -1,6 +1,14 @@
 import * as assert from 'assert';
 import * as http from 'http';
 
+/**
+ * Helper: perform a simple HTTP GET against the local demo server and
+ * return the response body as a string. Tests rely on the server listening
+ * on port 3000 (the default used by `nodeserver.ts`).
+ *
+ * @param path Absolute path+query string (e.g. '/get?key=world')
+ * @returns Promise resolved with the response body text
+ */
 const makeRequest = (path: string): Promise<string> => {
     return new Promise((resolve, reject) => {
         const req = http.get(`http://localhost:3000${path}`, (res: http.IncomingMessage) => {
@@ -15,6 +23,14 @@ const makeRequest = (path: string): Promise<string> => {
     });
 };
 
+/**
+ * Integration-style test suite for the demo Node server.
+ *
+ * These tests perform live HTTP requests against the server running on
+ * localhost:3000 and assert expected responses for each example endpoint.
+ * They are intentionally simple and verify the server's demonstration
+ * behavior (no mocking).
+ */
 describe('Node Server', () => {
     it('should return "key not passed" if key is not passed', async () => {
         const data = await makeRequest('/get');

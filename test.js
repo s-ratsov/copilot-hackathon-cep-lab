@@ -44,6 +44,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const assert = __importStar(require("assert"));
 const http = __importStar(require("http"));
+/**
+ * Helper: perform a simple HTTP GET against the local demo server and
+ * return the response body as a string. Tests rely on the server listening
+ * on port 3000 (the default used by `nodeserver.ts`).
+ *
+ * @param path Absolute path+query string (e.g. '/get?key=world')
+ * @returns Promise resolved with the response body text
+ */
 const makeRequest = (path) => {
     return new Promise((resolve, reject) => {
         const req = http.get(`http://localhost:3000${path}`, (res) => {
@@ -56,6 +64,14 @@ const makeRequest = (path) => {
         req.on('error', reject);
     });
 };
+/**
+ * Integration-style test suite for the demo Node server.
+ *
+ * These tests perform live HTTP requests against the server running on
+ * localhost:3000 and assert expected responses for each example endpoint.
+ * They are intentionally simple and verify the server's demonstration
+ * behavior (no mocking).
+ */
 describe('Node Server', () => {
     it('should return "key not passed" if key is not passed', () => __awaiter(void 0, void 0, void 0, function* () {
         const data = yield makeRequest('/get');
